@@ -10,6 +10,7 @@ const ProviderSubprovider = require("web3-provider-engine/subproviders/provider.
 const Web3 = require("web3");
 const Transaction = require("ethereumjs-tx");
 const ethUtil = require("ethereumjs-util");
+const QuorumSubprovider = require("./quorum");
 
 // This line shares nonce state across multiple provider instances. Necessary
 // because within truffle the wallet is repeatedly newed if it's declared in the config within a
@@ -82,6 +83,22 @@ class HDWalletProvider {
     const tmp_accounts = this.addresses;
     const tmp_wallets = this.wallets;
 
+    const signTransaction = (txParams, cb) => {
+      let pkey;
+      const from = txParams.from.toLowerCase();
+      if (tmp_wallets[from]) {
+        pkey = tmp_wallets[from].getPrivateKey();
+      } else {
+        cb("Account not found");
+      }
+      const tx = new Transaction(txParams);
+      tx.sign(pkey);
+      const rawTx = `0x${tx.serialize().toString("hex")}`;
+      cb(null, rawTx);
+    };
+
+    this.engine.addProvider(new QuorumSubprovider(signTransaction));
+
     this.engine.addProvider(
       new HookedSubprovider({
         getAccounts(cb) {
@@ -94,19 +111,7 @@ class HDWalletProvider {
             cb(null, tmp_wallets[address].getPrivateKey().toString("hex"));
           }
         },
-        signTransaction(txParams, cb) {
-          let pkey;
-          const from = txParams.from.toLowerCase();
-          if (tmp_wallets[from]) {
-            pkey = tmp_wallets[from].getPrivateKey();
-          } else {
-            cb("Account not found");
-          }
-          const tx = new Transaction(txParams);
-          tx.sign(pkey);
-          const rawTx = `0x${tx.serialize().toString("hex")}`;
-          cb(null, rawTx);
-        },
+        signTransaction,
         signMessage({ data, from }, cb) {
           const dataIfExists = data;
           if (!dataIfExists) {
