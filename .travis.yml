@@ -25,7 +25,7 @@ matrix:
       env: COVERAGE=true
 
 install:
-  - yarn bootstrap
+  - travis_wait yarn bootstrap
   - truffle obtain --solc=0.5.8
 
 cache:
