@@ -45,7 +45,7 @@ export interface EventOptions {
   name?: string;
   fromBlock?: BlockType;
   toBlock?: BlockType;
-  address?: string; //ignored by contract decoder!
+  address?: string;
 }
 
 export class ContractBeingDecodedHasNoNodeError extends Error {
