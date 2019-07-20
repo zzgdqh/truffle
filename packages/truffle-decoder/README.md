@@ -23,7 +23,7 @@ To use either decoder, first import `TruffleDecoder` from `truffle-decoder`.
 
 To obtain a `TruffleWireDecoder`, use
 ```
-let wireDecoder = await TruffleDecoder.forProject(contracts, provider)
+let wireDecoder = await TruffleDecoder.forProject(contracts, provider);
 ```
 where `contracts` is an array of all of your project's `ContractObject`s (i.e.,
 artifacts), and `provider` is the `web3` provider to use.
@@ -56,10 +56,9 @@ let contractDecoder = await TruffleDecoder.forContractWithDecoder(
   wireDecoder: TruffleWireDecoder,
   address?: string
 );
-
 ```
 
-A warning: At present, all of these methods can throw exceptions, indicating
+*Warning*: At present, all of these methods can throw exceptions, indicating
 that initialization of the decoder has failed, so be prepared to catch these.
 
 This will be remedied in future versions of the decoder, which will instead
@@ -79,7 +78,7 @@ Note: **All** of these methods are `async` except where noted otherwise.
 
 ###### decodeTransaction
 
-The `decodeTransaction` takes a web3 `Transaction` object and returns a
+The `decodeTransaction` method takes a web3 `Transaction` object and returns a
 `DecodedTransaction` object, which is the same thing but with an additional
 `decoding` field.  This field holds an object which can be of one of four forms:
 
@@ -345,12 +344,15 @@ mapping key ancestors (or else watching that mapping key wouldn't do very much).
 So in the example above, watching `mapMap[-1][0xdeadbeef]` will also watch
 `mapMap[-1]`.
 
-This works with more complex examples too; for instance, if one have a variable
-`mapping(string => mapping(int => bytes)[5]) complexMap`, then watching
-`complexMap["hi"][3][-8]` also automatically watches `complexMap["hi"]`.  (You
-may be wondering, what about `complexMap["hi"][3]`?  The answer is, `3` is
-acting as an array index there, not a mapping key, so there's no need to
-explicitly watch it so long as its parent `complexMap["hi"]` is watched.)
+This works with more complex examples too; for instance, if one has a variable
+```
+mapping(string => mapping(int => bytes)[5]) complexMap
+```
+then watching `complexMap["hi"][3][-8]` also automatically watches
+`complexMap["hi"]`.  (You may be wondering, what about `complexMap["hi"][3]`?
+The answer is, `3` is acting as an array index there, not a mapping key, so
+there's no need to explicitly watch it so long as its parent `complexMap["hi"]`
+is watched.)
 
 ##### unwatchMappingKey
 
@@ -380,8 +382,9 @@ has a `typeClass` field describing the overall broad type, such as `"uint"` or
 won't go into further detail about these here; I recommend simply looking at the
 aforementioned `types.ts` to see how these work.
 
-2. `kind`: This is either `"value"` or `"error"`.  In the former case, there
-will be a `value` field containing the decoded value.  In the latter case,
+2. `kind`: This is either `"value"`, in which case the `Result` is a `Value`, or
+`"error"`, in which case the `Result` is an `ErrorResult`.  In the former case,
+there will be a `value` field containing the decoded value.  In the latter case,
 there will be an `error` field indicating what went wrong.  *Warning*: When
 decoding a complex type, such as an array, mapping, or array, getting a kind of
 `"value"` does not necessarily mean the individual elements were decoded
