@@ -2,7 +2,6 @@ const Mocha = require("mocha");
 const chai = require("chai");
 const path = require("path");
 const Web3 = require("web3");
-const { promisify } = require("util");
 const Config = require("truffle-config");
 const Contracts = require("truffle-workflow-compile/new");
 const Resolver = require("truffle-resolver");
@@ -12,7 +11,6 @@ const TestSource = require("./testing/testsource");
 const SolidityTest = require("./testing/soliditytest");
 const expect = require("truffle-expect");
 const Migrate = require("truffle-migrate");
-const Profiler = require("truffle-compile/profiler");
 const originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
@@ -150,14 +148,9 @@ const Test = {
     config,
     testResolver
   ) {
-    const updated =
-      (await promisify(Profiler.updated)(
-        config.with({ resolver: testResolver })
-      )) || [];
-
     const compileConfig = config.with({
       all: config.compileAll === true,
-      files: updated.concat(solidityTestFiles),
+      files: solidityTestFiles,
       resolver: testResolver,
       quiet: false,
       quietWrite: true
@@ -165,7 +158,6 @@ const Test = {
 
     // Compile project contracts and test contracts
     const { contracts, compilations } = await Contracts.compile(compileConfig);
-
     await Contracts.save(compileConfig, contracts);
 
     return {
