@@ -1,9 +1,10 @@
 const Mocha = require("mocha");
+const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
 const Web3 = require("web3");
 const Config = require("truffle-config");
-const Contracts = require("truffle-workflow-compile");
+const Contracts = require("truffle-workflow-compile/new");
 const Resolver = require("truffle-resolver");
 const TestRunner = require("./testing/testrunner");
 const TestResolver = require("./testing/testresolver");
@@ -11,7 +12,6 @@ const TestSource = require("./testing/testsource");
 const SolidityTest = require("./testing/soliditytest");
 const expect = require("truffle-expect");
 const Migrate = require("truffle-migrate");
-const Profiler = require("truffle-compile/profiler");
 const originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
@@ -84,7 +84,7 @@ const Test = {
     );
     testResolver.cache_on = false;
 
-    const dependencyPaths = await this.compileContractsWithTestFilesIfNeeded(
+    const { compilations } = await this.compileContractsWithTestFilesIfNeeded(
       solTests,
       config,
       testResolver
@@ -101,11 +101,18 @@ const Test = {
     await this.defineSolidityTests(
       mocha,
       testContracts,
-      dependencyPaths,
+      compilations.solc.sourceIndexes,
       runner
     );
 
-    await this.setJSTestGlobals(web3, accounts, testResolver, runner);
+    await this.setJSTestGlobals({
+      config,
+      web3,
+      accounts,
+      testResolver,
+      runner,
+      compilation: compilations.solc
+    });
 
     // Finally, run mocha.
     process.on("unhandledRejection", reason => {
@@ -113,7 +120,7 @@ const Test = {
     });
 
     return new Promise(resolve => {
-      mocha.run(failures => {
+      this.mochaRunner = mocha.run(failures => {
         config.logger.warn = warn;
 
         resolve(failures);
@@ -144,36 +151,27 @@ const Test = {
     return web3.eth.getAccounts();
   },
 
-  compileContractsWithTestFilesIfNeeded: function(
+  compileContractsWithTestFilesIfNeeded: async function(
     solidityTestFiles,
     config,
     testResolver
   ) {
-    return new Promise(function(accept, reject) {
-      Profiler.updated(config.with({ resolver: testResolver }), function(
-        err,
-        updated
-      ) {
-        if (err) return reject(err);
-
-        updated = updated || [];
-
-        const compileConfig = config.with({
-          all: config.compileAll === true,
-          files: updated.concat(solidityTestFiles),
-          resolver: testResolver,
-          quiet: false,
-          quietWrite: true
-        });
-        // Compile project contracts and test contracts
-        Contracts.compile(compileConfig)
-          .then(result => {
-            const paths = result.outputs.solc;
-            accept(paths);
-          })
-          .catch(reject);
-      });
+    const compileConfig = config.with({
+      all: config.compileAll === true,
+      files: solidityTestFiles,
+      resolver: testResolver,
+      quiet: false,
+      quietWrite: true
     });
+
+    // Compile project contracts and test contracts
+    const { contracts, compilations } = await Contracts.compile(compileConfig);
+    await Contracts.save(compileConfig, contracts);
+
+    return {
+      contracts,
+      compilations
+    };
   },
 
   performInitialDeploy: function(config, resolver) {
@@ -195,13 +193,39 @@ const Test = {
     });
   },
 
-  setJSTestGlobals: function(web3, accounts, testResolver, runner) {
-    return new Promise(function(accept) {
+  setJSTestGlobals: function({
+    config,
+    web3,
+    accounts,
+    testResolver,
+    runner,
+    compilation
+  }) {
+    return new Promise(accept => {
       global.web3 = web3;
       global.assert = chai.assert;
       global.expect = chai.expect;
       global.artifacts = {
         require: import_path => testResolver.require(import_path)
+      };
+
+      global[config.debugGlobal] = async operation => {
+        if (!config.debug) {
+          config.logger.log(
+            `${colors.bold(
+              "Warning:"
+            )} Invoked in-test debugger without --debug flag. ` +
+              `Try: \`truffle test --debug\``
+          );
+          return operation;
+        }
+
+        // wrapped inside function so as not to load debugger on every test
+        const { CLIDebugHook } = require("./debug/mocha");
+
+        const hook = new CLIDebugHook(config, compilation, this.mochaRunner);
+
+        return await hook.debug(operation);
       };
 
       const template = function(tests) {
