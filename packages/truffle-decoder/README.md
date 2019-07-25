@@ -90,7 +90,7 @@ The `decodeTransaction` method takes a web3 `Transaction` object and returns a
      kind: "function";
      class: CodecUtils.Types.ContractType;
      arguments: AbiArgument[];
-     name: string;
+     abi: CodecUtils.AbiUtils.FunctionAbiEntry;
      selector: string;
      decodingMode: DecodingMode;
    }
@@ -98,8 +98,8 @@ The `decodeTransaction` method takes a web3 `Transaction` object and returns a
    
    Here, `kind` is always `"function"`; `class` is a `Type` object representing the
    class of the contract that was called (see the end for more about `Type`
-   objects); `arguments` is the array of decoded arguments; `name` is the name of
-   the function; and `selector` is its selector.
+   objects); `arguments` is the array of decoded arguments; `abi` is the function's
+   ABI entry; and `selector` is its selector.
    
    Each decoded argument is given as an object with two fields, `name` and
    `value`; `name` is of course the name of the parameter, but it will be excluded
@@ -118,14 +118,18 @@ The `decodeTransaction` method takes a web3 `Transaction` object and returns a
      kind: "constructor";
      class: CodecUtils.Types.ContractType;
      arguments: AbiArgument[];
+     abi: CodecUtils.AbiUtils.ConstructorAbiEntry;
      bytecode: string;
      decodingMode: DecodingMode;
    }
    ```
    
-   This is similar to the function decoding, except that there is no name or
-   selector, and instead there is `bytecode`, which contains the bytecode for the
+   This is similar to the function decoding, except that there is no selector,
+   and instead there is `bytecode`, which contains the bytecode for the
    constructor with the arguments *excluded*.
+
+   The `abi` field will contain the constructor's ABI entry; if it's a default
+   constructor, we'll generate one.
    
    *Remark*: In the future this case may also include further information about the
    linked libraries of the contract being constructed by this transaction; however,
@@ -136,6 +140,7 @@ The `decodeTransaction` method takes a web3 `Transaction` object and returns a
    export interface FallbackDecoding {
      kind: "fallback";
      class: CodecUtils.Types.ContractType;
+     abi: CodecUtils.AbiUtils.FallbackAbiEntry;
      data: string;
      decodingMode: DecodingMode;
    }
@@ -145,6 +150,9 @@ The `decodeTransaction` method takes a web3 `Transaction` object and returns a
    leaving its fallback function (if it exists) to be invoked.  The `data` field
    contains a copy of the data.  Obviously, there is no `arguments` field in this
    case.
+
+   The `abi` field will contain the fallback function's ABI entry; if it's a default
+   fallback function, we'll generate one.
 
 4. An unknown decoding:
    ```
@@ -183,7 +191,7 @@ Each decoding can have one of two forms:
      kind: "event";
      class: CodecUtils.Types.ContractType;
      arguments: AbiArgument[];
-     name: string;
+     abi: CodecUtils.AbiUtils.EventAbiEntry; //should be non-anonymous
      selector: string;
      decodingMode: DecodingMode;
    }
@@ -191,7 +199,7 @@ Each decoding can have one of two forms:
    
    As with `decodeTransaction`, we have `kind`, `class` (the class of the contract
    that emitted the event, according to this decoding; again, see below about
-   `Type` objects), `arguments`, `name`, `selector`, and `decodingMode`.  You can
+   `Type` objects), `arguments`, `abi`, `selector`, and `decodingMode`.  You can
    see the documentation for `decodeTransaction` for more about these.
    
    Note that the objects in the `arguments` array now have one additional property:
@@ -203,7 +211,7 @@ Each decoding can have one of two forms:
      kind: "anonymous";
      class: CodecUtils.Types.ContractType;
      arguments: AbiArgument[];
-     name: string;
+     abi: CodecUtils.AbiUtils.EventAbiEntry; //should be anonymous
      decodingMode: DecodingMode;
    }
    ```
@@ -280,8 +288,8 @@ Returns the state of the contract, in the following form:
 ```
 export interface ContractState {
   name: string;
-  balance: BN;
-  nonce: BN;
+  balanceAsBN: BN;
+  nonceAsBN: BN;
   code: string;
   variables: {
     [name: string]: Values.Result
@@ -289,10 +297,10 @@ export interface ContractState {
 };
 ```
 
-The `name` field is the contract name, `balance` is the balance in Wei, `nonce`
-the nonce (a.k.a transaction count), `code` the bytecode as a hex string,
-and `variables` an object mapping variable names to their decoded values (as
-`Result`s).
+The `name` field is the contract name, `balanceAsBN` is the balance in Wei,
+`nonceAsBN` the nonce (a.k.a. transaction count), `code` the bytecode as a hex
+string, and `variables` an object mapping variable names to their decoded
+values (as `Result`s).
 
 Optionally, you may specify a block in order to inspect the state of the
 contract at a time other than the present.
