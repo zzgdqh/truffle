@@ -3,7 +3,7 @@ const chai = require("chai");
 const path = require("path");
 const Web3 = require("web3");
 const Config = require("truffle-config");
-const Contracts = require("truffle-workflow-compile");
+const Contracts = require("truffle-workflow-compile/new");
 const Resolver = require("truffle-resolver");
 const TestRunner = require("./testing/testrunner");
 const TestResolver = require("./testing/testresolver");
@@ -11,7 +11,6 @@ const TestSource = require("./testing/testsource");
 const SolidityTest = require("./testing/soliditytest");
 const expect = require("truffle-expect");
 const Migrate = require("truffle-migrate");
-const Profiler = require("truffle-compile/profiler");
 const originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
@@ -84,7 +83,7 @@ const Test = {
     );
     testResolver.cache_on = false;
 
-    const dependencyPaths = await this.compileContractsWithTestFilesIfNeeded(
+    const { compilations } = await this.compileContractsWithTestFilesIfNeeded(
       solTests,
       config,
       testResolver
@@ -101,7 +100,7 @@ const Test = {
     await this.defineSolidityTests(
       mocha,
       testContracts,
-      dependencyPaths,
+      compilations.solc.sourceIndexes,
       runner
     );
 
@@ -144,36 +143,27 @@ const Test = {
     return web3.eth.getAccounts();
   },
 
-  compileContractsWithTestFilesIfNeeded: function(
+  compileContractsWithTestFilesIfNeeded: async function(
     solidityTestFiles,
     config,
     testResolver
   ) {
-    return new Promise(function(accept, reject) {
-      Profiler.updated(config.with({ resolver: testResolver }), function(
-        err,
-        updated
-      ) {
-        if (err) return reject(err);
-
-        updated = updated || [];
-
-        const compileConfig = config.with({
-          all: config.compileAll === true,
-          files: updated.concat(solidityTestFiles),
-          resolver: testResolver,
-          quiet: config.quiet,
-          quietWrite: true
-        });
-        // Compile project contracts and test contracts
-        Contracts.compile(compileConfig)
-          .then(result => {
-            const paths = result.outputs.solc;
-            accept(paths);
-          })
-          .catch(reject);
-      });
+    const compileConfig = config.with({
+      all: config.compileAll === true,
+      files: solidityTestFiles,
+      resolver: testResolver,
+      quiet: false,
+      quietWrite: true
     });
+
+    // Compile project contracts and test contracts
+    const { contracts, compilations } = await Contracts.compile(compileConfig);
+    await Contracts.save(compileConfig, contracts);
+
+    return {
+      contracts,
+      compilations
+    };
   },
 
   performInitialDeploy: function(config, resolver) {
