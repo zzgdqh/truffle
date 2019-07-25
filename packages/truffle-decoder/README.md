@@ -1,4 +1,6 @@
 # Truffle Decoder
+
+Thirdly, except when decoding events, we don't consider it to be an error to 
 This module provides interfaces for decoding contract state, transaction
 calldata, and events.
 
@@ -83,79 +85,79 @@ The `decodeTransaction` method takes a web3 `Transaction` object and returns a
 `decoding` field.  This field holds an object which can be of one of four forms:
 
 1. A function decoding:
-```
-interface FunctionDecoding {
-  kind: "function";
-  class: CodecUtils.Types.ContractType;
-  arguments: AbiArgument[];
-  name: string;
-  selector: string;
-  decodingMode: DecodingMode;
-}
-```
-
-Here, `kind` is always `"function"`; `class` is a `Type` object representing the
-class of the contract that was called (see the end for more about `Type`
-objects); `arguments` is the array of decoded arguments; `name` is the name of
-the function; and `selector` is its selector.
-
-Each decoded argument is given as an object with two fields, `name` and
-`value`; `name` is of course the name of the parameter, but it will be excluded
-if the parameter is nameless.  The `value` field is a `Result` object containing
-the actual decoded value; see the end for more about these.
-
-There is also the `decodingMode` field.  This field is either `"abi"` (to
-indicate that decoding was performed based on the contracts' ABIs alone) or
-`"full"` (to indicate that additional information from Solidity was used where
-possible).  Currently, only `"full"` mode is implemented, so this field will
-always be `"full"`.
+   ```
+   interface FunctionDecoding {
+     kind: "function";
+     class: CodecUtils.Types.ContractType;
+     arguments: AbiArgument[];
+     name: string;
+     selector: string;
+     decodingMode: DecodingMode;
+   }
+   ```
+   
+   Here, `kind` is always `"function"`; `class` is a `Type` object representing the
+   class of the contract that was called (see the end for more about `Type`
+   objects); `arguments` is the array of decoded arguments; `name` is the name of
+   the function; and `selector` is its selector.
+   
+   Each decoded argument is given as an object with two fields, `name` and
+   `value`; `name` is of course the name of the parameter, but it will be excluded
+   if the parameter is nameless.  The `value` field is a `Result` object containing
+   the actual decoded value; see the end for more about these.
+   
+   There is also the `decodingMode` field.  This field is either `"abi"` (to
+   indicate that decoding was performed based on the contracts' ABIs alone) or
+   `"full"` (to indicate that additional information from Solidity was used where
+   possible).  Currently, only `"full"` mode is implemented, so this field will
+   always be `"full"`.
 
 2. A constructor decoding:
-```
-export interface ConstructorDecoding {
-  kind: "constructor";
-  class: CodecUtils.Types.ContractType;
-  arguments: AbiArgument[];
-  bytecode: string;
-  decodingMode: DecodingMode;
-}
-```
-
-This is similar to the function decoding, except that there is no name or
-selector, and instead there is `bytecode`, which contains the bytecode for the
-constructor with the arguments *excluded*.
-
-*Remark*: In the future this case may also include further information about the
-linked libraries of the contract being constructed by this transaction; however,
-this feature will likely not be ready for quite some time.
+   ```
+   export interface ConstructorDecoding {
+     kind: "constructor";
+     class: CodecUtils.Types.ContractType;
+     arguments: AbiArgument[];
+     bytecode: string;
+     decodingMode: DecodingMode;
+   }
+   ```
+   
+   This is similar to the function decoding, except that there is no name or
+   selector, and instead there is `bytecode`, which contains the bytecode for the
+   constructor with the arguments *excluded*.
+   
+   *Remark*: In the future this case may also include further information about the
+   linked libraries of the contract being constructed by this transaction; however,
+   this feature will likely not be ready for quite some time.
 
 3. A fallback decoding:
-```
-export interface FallbackDecoding {
-  kind: "fallback";
-  class: CodecUtils.Types.ContractType;
-  data: string;
-  decodingMode: DecodingMode;
-}
-```
-
-This case indicates that the data for the call did not match the contract's ABI,
-leaving its fallback function (if it exists) to be invoked.  The `data` field
-contains a copy of the data.  Obviously, there is no `arguments` field in this
-case.
+   ```
+   export interface FallbackDecoding {
+     kind: "fallback";
+     class: CodecUtils.Types.ContractType;
+     data: string;
+     decodingMode: DecodingMode;
+   }
+   ```
+   
+   This case indicates that the data for the call did not match the contract's ABI,
+   leaving its fallback function (if it exists) to be invoked.  The `data` field
+   contains a copy of the data.  Obviously, there is no `arguments` field in this
+   case.
 
 4. An unknown decoding:
-```
-export interface UnknownDecoding {
-  kind: "unknown";
-  decodingMode: DecodingMode;
-  data: string;
-}
-```
-
-This is used when it was not even possible to determine the class of the
-contract that the transaction was directed to (or constructing).  It is similar
-to a fallback decoding.
+   ```
+   export interface UnknownDecoding {
+     kind: "unknown";
+     decodingMode: DecodingMode;
+     data: string;
+   }
+   ```
+   
+   This is used when it was not even possible to determine the class of the
+   contract that the transaction was directed to (or constructing).  It is similar
+   to a fallback decoding.
 
 ###### decodeLog
 
@@ -166,41 +168,48 @@ plural; logs may be ambiguous, so `decodings` is an array of decodings.  As a
 result there is no equivalent for logs of the `UnknownDecoding` case above; if a
 log cannot be decoded, its `decodings` array will simply be empty.
 
+Note also that `decodeLog` only allows decodings that are encoded strictly
+correctly according to the ABI.  So, none of the `Result`s in an event decoding
+should ever be an `ErrorResult`, they should always be `Value`s.
+
+(There's one exception to this:  It's impossible to decode an indexed parameter of
+reference type.  These will decode to an `ErrorResult` containing the raw data.)
+
 Each decoding can have one of two forms:
 
 1. A non-anonymous event decoding:
-```
-export interface EventDecoding {
-  kind: "event";
-  class: CodecUtils.Types.ContractType;
-  arguments: AbiArgument[];
-  name: string;
-  selector: string;
-  decodingMode: DecodingMode;
-}
-```
-
-As with `decodeTransaction`, we have `kind`, `class` (the class of the contract
-that emitted the event, according to this decoding; again, see below about
-`Type` objects), `arguments`, `name`, `selector`, and `decodingMode`.  You can
-see the documentation for `decodeTransaction` for more about these.
-
-Note that the objects in the `arguments` array now have one additional property:
-`indexed`, a boolean indicating whether that parameter is indexed or not.
+   ```
+   export interface EventDecoding {
+     kind: "event";
+     class: CodecUtils.Types.ContractType;
+     arguments: AbiArgument[];
+     name: string;
+     selector: string;
+     decodingMode: DecodingMode;
+   }
+   ```
+   
+   As with `decodeTransaction`, we have `kind`, `class` (the class of the contract
+   that emitted the event, according to this decoding; again, see below about
+   `Type` objects), `arguments`, `name`, `selector`, and `decodingMode`.  You can
+   see the documentation for `decodeTransaction` for more about these.
+   
+   Note that the objects in the `arguments` array now have one additional property:
+   `indexed`, a boolean indicating whether that parameter is indexed or not.
 
 2. An anonymous event decoding:
-```
-export interface AnonymousDecoding {
-  kind: "anonymous";
-  class: CodecUtils.Types.ContractType;
-  arguments: AbiArgument[];
-  name: string;
-  decodingMode: DecodingMode;
-}
-```
-
-This is similar to the above case, except of course that no selector is
-included.
+   ```
+   export interface AnonymousDecoding {
+     kind: "anonymous";
+     class: CodecUtils.Types.ContractType;
+     arguments: AbiArgument[];
+     name: string;
+     decodingMode: DecodingMode;
+   }
+   ```
+   
+   This is similar to the above case, except of course that no selector is
+   included.
 
 ###### decodeLogs
 
@@ -407,10 +416,10 @@ Rather than explain the format in detail -- you can see the code for that -- I'd
 instead like to take a moment to answer the question: What counts as a value,
 and what counts as an error?
 
-In general, the answer is that anything that can be generated via Solidity alone
-(i.e. no assembly), and without making use of compiler bugs, is a value, not an
-error.  That means that, for instance, the following things are values, not
-errors:
+In general, the answer is that anything that can be generated via Solidity
+alone (i.e. no assembly), with correctly-encoded inputs, and without making use
+of compiler bugs, is a value, not an error.  That means that, for instance, the
+following things are values, not errors:
 
 1. A variable of contract type whose address does not actually hold a contract
 of that type;
@@ -433,9 +442,11 @@ etc.
 far back, to Solidity 0.4.4 or earlier, it *was* possible to generate
 out-of-range enums without resorting to assembly or compiler bugs.  However, the
 decoder is not intended to support Solidity older than 0.4.9 (except in ABI-only
-mode, which doesn't know about enums), so we consider it an error.)
+mode, which doesn't know about enums), so we consider it an error.  There are also
+additional technical reasons why supporting out-of-range enums as a value would be
+difficult.)
 
-There are two special cases here that are likely worthy of note.
+There are four special cases here that are likely worthy of note.
 
 Firstly, as noted above, internal function pointers currently can't be
 meaningfully decoded via `TruffleDecoder`.  However, they decode to a bare-bones
@@ -456,3 +467,10 @@ type results in an error, not a value.  This does not meet our criterion above
 for being an error -- as described in the previous paragraph, the failure to
 decode is our own fault so it ought to be a value -- but we simply don't have a
 value format ready yet.  However, we're intending to remedy this soon.
+
+Thirdly, when decoding events, it is impossible to decode indexed parameters of
+reference type.  Thus, these decode to an error rather than to a value.
+
+Finally, except when decoding events, we do not return an error if the pointers
+in an ABI-encoded array or tuple are arranged in a nonstandard way, because it
+is not worth the trouble to dected it in that case.
