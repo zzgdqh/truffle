@@ -343,8 +343,11 @@ var DebugUtils = {
   },
 
   formatValue: function(value, indent = 0) {
+    const inspected = value.kind
+      ? new CodecUtils.ResultInspector(value)
+      : value;
     return util
-      .inspect(new CodecUtils.ResultInspector(value), {
+      .inspect(inspected, {
         colors: true,
         depth: null,
         maxArrayLength: null,
