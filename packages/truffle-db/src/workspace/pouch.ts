@@ -85,6 +85,7 @@ export class Workspace {
     try {
       const result = {
         ...await this.contracts.get(id),
+        $resourceType: "Contract",
 
         id
       }
@@ -132,7 +133,8 @@ export class Workspace {
 
     try {
       return  {
-        ... await this.compilations.get(id),
+        ...await this.compilations.get(id),
+        $resourceType: "Compilation",
 
         id
       };
@@ -179,6 +181,7 @@ export class Workspace {
     try {
       return {
         ...await this.contractInstances.get(id),
+        $resourceType: "ContractInstance",
 
         id
       };
@@ -223,6 +226,7 @@ export class Workspace {
     try {
       return {
         ...await this.networks.get(id),
+        $resourceType: "Network",
 
         id
       };
@@ -268,6 +272,7 @@ export class Workspace {
     try {
       return {
         ...await this.sources.get(id),
+        $resourceType: "Source",
 
         id
       };
@@ -312,6 +317,7 @@ export class Workspace {
     try {
       return {
         ...await this.bytecodes.get(id),
+        $resourceType: "Bytecode",
 
         id
       };
