@@ -24,6 +24,7 @@
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
+    "docs": "typedoc",
     "clean": "rm -rf ./dist ./types/schema.d.ts",
     "prepare": "yarn build",
     "build": "./bin/build",
@@ -46,6 +47,7 @@
     "ts-jest": "^23.10.5",
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.7.0",
+    "typedoc": "^0.15.0",
     "typescript": "^3.2.2"
   },
   "dependencies": {

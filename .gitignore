@@ -1,9 +1,4 @@
 lerna-debug.log
-packages/truffle/build
-packages/truffle-debugger/.tmp
-packages/truffle-db/dist
-packages/truffle-db/types/schema.d.ts
-packages/truffle-contract/dist
 packages/**/node_modules
 node_modules
 yarn-error.log
@@ -22,3 +17,8 @@ packages/truffle-debugger/.tmp
 
 # truffle-contract
 packages/truffle-contract/dist
+
+#truffle-db
+packages/truffle-db/dist
+packages/truffle-db/docs
+packages/truffle-db/types/schema.d.ts
