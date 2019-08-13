@@ -24,7 +24,10 @@ interface IContext {
 }
 
 interface ITruffleDB {
-  query: (query: DocumentNode | string,
+  query: (request: DocumentNode | string,
+    variables: any) =>
+    Promise<any>
+  execute: (request: DocumentNode | string,
     variables: any) =>
     Promise<any>
 }
@@ -39,15 +42,24 @@ export class TruffleDB {
   }
 
   async query (
-    query: DocumentNode | string,
+    request: DocumentNode | string,
+    variables: any = {}
+  ):
+    Promise<any>
+  {
+    return await this.execute(request, variables);
+  }
+
+  async execute (
+    request: DocumentNode | string,
     variables: any = {}
   ):
     Promise<any>
   {
     const document: DocumentNode =
-      (typeof query !== "string")
-        ? query
-        : parse(query);
+      (typeof request !== "string")
+        ? request
+        : parse(request);
 
     return await execute(
       this.schema, document, null, this.context, variables
