@@ -6,9 +6,6 @@ import { abiSchema, schema as artifactsSchema } from "truffle-db/artifacts";
 import { schema as workspaceSchema } from "truffle-db/workspace";
 import { loaderSchema } from "truffle-db/loaders";
 
-
-import { readInstructions } from "./bytecode";
-
 export const schema = scopeSchemas({
   subschemas: {
     artifacts: artifactsSchema,
@@ -22,14 +19,6 @@ export const schema = scopeSchemas({
     ])
   ],
   resolvers: {
-    Bytecode: {
-      instructions: {
-        fragment: "... on Bytecode { bytes sourceMap }",
-        resolve: ({ bytes, sourceMap }) =>
-          readInstructions(bytes, sourceMap)
-      }
-    },
-
     AbiItem: {
       __resolveType(obj) {
         switch (obj.type) {
