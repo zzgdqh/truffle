@@ -4,12 +4,25 @@ import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import * as Contracts from "truffle-workflow-compile";
 
+const fixturesDirectory = path.join(
+  __dirname, // truffle-db/src/loaders/artifacts/test
+  "..", // truffle-db/src/loaders
+  "..", // truffle-db/src/
+  "..", // truffle-db/
+  "test",
+  "fixtures"
+);
+
+const sourcesDirectory = path.join(fixturesDirectory, "sources");
+const buildDirectory = path.join(fixturesDirectory, "build");
+const compilationSourcesDirectory = path.join(fixturesDirectory, "compilationSources");
+
 jest.mock("truffle-workflow-compile", () => ({
  compile: function(config, callback) {
-   const magicSquare= require(path.join(__dirname,"..", "artifacts", "test", "sources", "MagicSquare.json"));
-   const migrations = require(path.join(__dirname, "..", "artifacts", "test", "sources", "Migrations.json"));
-   const squareLib = require(path.join(__dirname, "..", "artifacts", "test", "sources", "SquareLib.json"));
-   const vyperStorage = require(path.join(__dirname, "..", "artifacts", "test", "sources", "VyperStorage.json"));
+   const magicSquare = require(path.join(sourcesDirectory, "MagicSquare.json"));
+   const migrations = require(path.join(sourcesDirectory, "Migrations.json"));
+   const squareLib = require(path.join(sourcesDirectory, "SquareLib.json"));
+   const vyperStorage = require(path.join(sourcesDirectory, "VyperStorage.json"));
    const returnValue = {
     "outputs": {
       "solc": [
@@ -43,13 +56,11 @@ jest.mock("truffle-workflow-compile", () => ({
  }
 }));
 
-const fixturesDirectory = path.join(__dirname, "..", "artifacts", "test");
-
 // minimal config
 const config = {
-  contracts_build_directory: path.join(fixturesDirectory, "sources"),
-  contracts_directory: path.join(fixturesDirectory, "compilationSources"),
-  artifacts_directory: path.join(fixturesDirectory, "compilationSources", "build", "contracts"),
+  contracts_build_directory: sourcesDirectory,
+  contracts_directory: compilationSourcesDirectory,
+  artifacts_directory: path.join(compilationSourcesDirectory, "build", "contracts"),
   all: true
 };
 

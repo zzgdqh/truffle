@@ -4,12 +4,13 @@ import path from "path";
 import { TruffleDB } from "truffle-db";
 
 const fixturesDirectory = path.join(
-  __dirname, // truffle-db/src/test
+  __dirname, // truffle-db/src/artifacts/test
   "..", // truffle-db/src/artifacts
   "..", // truffle-db/src
   "..", // truffle-db
   "test",
-  "fixtures"
+  "fixtures",
+  "basic"
 );
 
 // minimal config

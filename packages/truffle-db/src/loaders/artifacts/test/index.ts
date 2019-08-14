@@ -15,6 +15,20 @@ import * as fse from "fs-extra";
 let server;
 const port = 8545;
 
+const fixturesDirectory = path.join(
+  __dirname, // truffle-db/src/loaders/artifacts/test
+  "..", // truffle-db/src/loaders/artifacts
+  "..", // truffle-db/src/loaders
+  "..", // truffle-db/src/
+  "..", // truffle-db/
+  "test",
+  "fixtures"
+);
+
+const sourcesDirectory = path.join(fixturesDirectory, "sources");
+const buildDirectory = path.join(fixturesDirectory, "build");
+const compilationSourcesDirectory = path.join(fixturesDirectory, "compilationSources");
+
 beforeAll(async (done)=> {
   server = Ganache.server();
   server.listen(port, done);
@@ -28,10 +42,10 @@ afterAll(async (done) => {
 // and also to keep from adding more time to Travis testing
 jest.mock("truffle-workflow-compile", () => ({
   compile: function(config, callback) {
-    const magicSquare= require(path.join(__dirname, "sources", "MagicSquare.json"));
-    const migrations = require(path.join(__dirname, "sources", "Migrations.json"));
-    const squareLib = require(path.join(__dirname, "sources", "SquareLib.json"));
-    const vyperStorage = require(path.join(__dirname, "sources", "VyperStorage.json"));
+    const magicSquare = require(path.join(sourcesDirectory, "MagicSquare.json"));
+    const migrations = require(path.join(sourcesDirectory, "Migrations.json"));
+    const squareLib = require(path.join(sourcesDirectory, "SquareLib.json"));
+    const vyperStorage = require(path.join(sourcesDirectory, "VyperStorage.json"));
     const returnValue = {
       "outputs": {
         "solc": [
@@ -65,41 +79,40 @@ jest.mock("truffle-workflow-compile", () => ({
   }
 }));
 
-const fixturesDirectory = path.join(__dirname, "sources");
-
 // minimal config
 const config = {
-  contracts_build_directory: fixturesDirectory
+  contracts_build_directory: sourcesDirectory
 };
 
 const compilationConfig =  {
-  contracts_directory: path.join(__dirname, "compilationSources"),
-  contracts_build_directory: path.join(__dirname, "compilationSources", "build", "contracts"),
-  artifacts_directory: path.join(__dirname, "compilationSources", "build", "contracts"),
+  contracts_directory: compilationSourcesDirectory,
+  contracts_build_directory: path.join(compilationSourcesDirectory, "contracts"),
+  artifacts_directory: path.join(compilationSourcesDirectory, "build", "contracts"),
   all: true
 }
 
 const migratedArtifacts = [
-  require(path.join(__dirname, "compilationSources", "build", "contracts", "MagicSquare.json")),
-  require(path.join(__dirname, "compilationSources", "build", "contracts", "Migrations.json")),
-  require(path.join(__dirname, "compilationSources", "build", "contracts", "SquareLib.json")),
-  require(path.join(__dirname, "compilationSources", "build", "contracts", "VyperStorage.json"))
+  require(path.join(compilationSourcesDirectory, "build", "contracts", "MagicSquare.json")),
+  require(path.join(compilationSourcesDirectory, "build", "contracts", "Migrations.json")),
+  require(path.join(compilationSourcesDirectory, "build", "contracts", "SquareLib.json")),
+  require(path.join(compilationSourcesDirectory, "build", "contracts", "VyperStorage.json"))
  ];
 
 const migrationFileNames = ["MagicSquare.json", "Migrations.json", "SquareLib.json", "VyperStorage.json"];
 
-const migrationConfig = Config.detect({ workingDirectory: path.join(__dirname, "compilationSources") });
+const migrationConfig = Config.detect({
+  workingDirectory: compilationSourcesDirectory
+});
 migrationConfig.network = "development";
 
 const db = new TruffleDB(config);
-const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
 
 const artifacts = [
-  require(path.join(__dirname, "sources", "MagicSquare.json")),
-  require(path.join(__dirname, "sources", "Migrations.json")),
-  require(path.join(__dirname, "sources", "SquareLib.json")),
-  require(path.join(__dirname, "sources", "VyperStorage.json"))
-   ];
+  require(path.join(sourcesDirectory, "MagicSquare.json")),
+  require(path.join(sourcesDirectory, "Migrations.json")),
+  require(path.join(sourcesDirectory, "SquareLib.json")),
+  require(path.join(sourcesDirectory, "VyperStorage.json"))
+];
 
 const GetWorkspaceBytecode: boolean = gql`
 query GetWorkspaceBytecode($id: ID!) {
@@ -256,7 +269,7 @@ describe("Compilation", () => {
       });
       bytecodeIds.push({ id: bytecodeId });
 
-      let networks = JSON.parse(await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]))).networks;
+      let networks = JSON.parse(await fse.readFile(path.join(compilationSourcesDirectory, "build", "contracts", migrationFileNames[index]))).networks;
       const networksArray = Object.entries(networks);
 
       if(networksArray.length > 0) {
@@ -314,11 +327,11 @@ describe("Compilation", () => {
 
   afterAll(async() => {
     await Promise.all(artifacts.map(async(contract, index) => {
-    let migratedArtifact = JSON.parse(await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])));
+    let migratedArtifact = JSON.parse(await fse.readFile(path.join(compilationSourcesDirectory, "build", "contracts", migrationFileNames[index])));
     migratedArtifact.networks = {};
     migratedArtifact.updatedAt = '';
-    await fse.remove(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]));
-    await fse.writeFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]), JSON.stringify(migratedArtifact, null, 2));
+    await fse.remove(path.join(compilationSourcesDirectory, "build", "contracts", migrationFileNames[index]));
+    await fse.writeFile(path.join(compilationSourcesDirectory, "build", "contracts", migrationFileNames[index]), JSON.stringify(migratedArtifact, null, 2));
     }));
   });
 

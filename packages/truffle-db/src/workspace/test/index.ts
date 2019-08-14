@@ -13,7 +13,8 @@ const fixturesDirectory = path.join(
   "..", // truffle-db/src/
   "..", // truffle-db/
   "test",
-  "fixtures"
+  "fixtures",
+  "basic"
 );
 
 class WorkspaceClient {
