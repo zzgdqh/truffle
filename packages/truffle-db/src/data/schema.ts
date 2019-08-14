@@ -4,6 +4,7 @@ import { scopeSchemas } from "./utils";
 
 import { abiSchema, schema as artifactsSchema } from "truffle-db/artifacts";
 import { schema as workspaceSchema } from "truffle-db/workspace";
+import { schema as resourcesSchema } from "truffle-db/resources";
 import { loaderSchema } from "truffle-db/loaders";
 
 export const schema = scopeSchemas({
@@ -16,7 +17,8 @@ export const schema = scopeSchemas({
     // add types from abi schema
     transformSchema(abiSchema, [
       new FilterRootFields( () => false )
-    ])
+    ]),
+    resourcesSchema
   ],
   resolvers: {
     AbiItem: {
