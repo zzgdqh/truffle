@@ -1,5 +1,5 @@
 import gql from "graphql-tag";
-import { toGlobalId } from "graphql-relay-tools";
+import { fromGlobalId, toGlobalId } from "graphql-relay-tools";
 
 import { TruffleDB } from "truffle-db/db";
 
@@ -73,6 +73,39 @@ export class TestClient {
     const { id } = source;
 
     return toGlobalId("Source", id);
+  }
+
+  async addCompilation({ compiler, sources }) {
+    const compilation = {
+      compiler,
+      sources: sources.map(({ id }) => ({ id: fromGlobalId(id).id }))
+    };
+
+    const AddCompilation = gql`
+      mutation AddCompilation($compilation: CompilationInput!) {
+        workspace {
+          compilationsAdd(input: {
+            compilations: [$compilation]
+          }) {
+            compilations {
+              id
+            }
+          }
+        }
+      }
+    `;
+
+    const data = await this.execute(AddCompilation, { compilation });
+
+    {
+      const { workspace } = data;
+      const { compilationsAdd } = workspace;
+      const { compilations } = compilationsAdd;
+      const compilation = compilations[0];
+      const { id } = compilation;
+
+      return toGlobalId("Compilation", id);
+    }
   }
 }
 

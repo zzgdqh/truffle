@@ -91,3 +91,65 @@ describe("Source", () => {
     }
   });
 });
+
+describe("Compilation", () => {
+  const GetCompilation = gql`
+  query GetCompilation($id: ID!) {
+    compilation(id: $id) {
+      compiler {
+        name
+        version
+      }
+      sources {
+        edges {
+          node {
+            contents
+          }
+        }
+      }
+    }
+  }`;
+
+  let sourceId;
+  let client;
+  beforeEach(async () => {
+    client = new TestClient({
+      contracts_build_directory: fixturesDirectory,
+    });
+
+    // precondition: add source
+    sourceId = await client.addSource({ contents: Migrations.source });
+  });
+
+  it("retrieves by id", async () => {
+    const input = {
+      compiler: {
+        name: Migrations.compiler.name,
+        version: Migrations.compiler.version
+      },
+      sources: [{
+        id: sourceId
+      }]
+    };
+
+    const id = await client.addCompilation(input);
+
+    // ensure retrieved as matching
+    {
+      const data = await client.execute(GetCompilation, { id });
+      expect(data).toHaveProperty("compilation");
+
+      const { compilation } = data;
+      expect(compilation).toHaveProperty("compiler");
+      expect(compilation).toHaveProperty("sources");
+
+      const { compiler } = compilation;
+      expect(compiler).toEqual(input.compiler);
+
+      const sources = compilation.sources.edges.map(
+        ({ node: { contents }}) => ({ contents })
+      );
+      expect(sources).toEqual([{ contents: Migrations.source }]);
+    }
+  });
+});

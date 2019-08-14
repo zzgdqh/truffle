@@ -15,6 +15,9 @@ import {
   connectionFromArray
 } from "graphql-relay-tools";
 
+const { connectionType } = connectionDefinitions({
+  name: "Source"
+});
 
 export const schema = makeExecutableSchema({
   typeDefs: gql`
@@ -22,11 +25,13 @@ export const schema = makeExecutableSchema({
 
     scalar Bytes
     scalar ByteOffset
+    scalar Object
 
     type Query {
       ${nodeField}
       bytecode(id: ID!): Bytecode
       source(id: ID!): Source
+      compilation(id: ID!): Compilation
     }
 
     type LinkValue {
@@ -52,6 +57,20 @@ export const schema = makeExecutableSchema({
       sourcePath: String
     }
 
+    type Compilation implements Node {
+      id: ID!
+      compiler: Compiler
+      sources${connectionArgs()}: SourceConnection
+    }
+
+    type Compiler {
+      name: String
+      version: String
+      settings: Object
+    }
+
+
+    ${connectionType}
     ${pageInfoType}
   `,
   resolvers: {
@@ -83,6 +102,12 @@ export const schema = makeExecutableSchema({
           const { id } = fromGlobalId(globalId);
           return workspace.bytecode({ id });
         }
+      },
+      compilation: {
+        resolve: (_, { id: globalId }, { workspace }) => {
+          const { id } = fromGlobalId(globalId);
+          return workspace.compilation({ id });
+        }
       }
     },
     Source: {
@@ -90,6 +115,15 @@ export const schema = makeExecutableSchema({
     },
     Bytecode: {
       id: globalIdResolver()
+    },
+    Compilation: {
+      id: globalIdResolver(),
+      sources: async (compilation, args, { workspace }) => {
+        const sources = await Promise.all(compilation.sources.map(
+          async ({ id }) => await workspace.source({ id })
+        ));
+        return connectionFromArray(sources, args);
+      }
     },
     Node: {
       __resolveType (root) {
