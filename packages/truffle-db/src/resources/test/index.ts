@@ -24,15 +24,14 @@ const Migrations: ContractObject = require(path.join(fixturesDirectory, "Migrati
 /*
  * Bytecode
  */
-const GetBytecode = gql`
-query GetBytecode($id: ID!) {
-  bytecode(id: $id) {
-    bytes
-  }
-}`;
-
-
 describe("Bytecode", () => {
+  const GetBytecode = gql`
+  query GetBytecode($id: ID!) {
+    bytecode(id: $id) {
+      bytes
+    }
+  }`;
+
   it("retrieves by id", async () => {
     const client = new TestClient({
       contracts_build_directory: fixturesDirectory,
@@ -51,11 +50,44 @@ describe("Bytecode", () => {
       expect(data).toHaveProperty("bytecode");
 
       const { bytecode } = data;
-      expect(bytecode).toHaveProperty("id");
       expect(bytecode).toHaveProperty("bytes");
 
       const { bytes } = bytecode;
       expect(bytes).toEqual(variables.bytes);
+    }
+  });
+});
+
+describe("Source", () => {
+  const GetSource = gql`
+  query GetSource($id: ID!) {
+    source(id: $id) {
+      contents
+    }
+  }`;
+
+  it("retrieves by id", async () => {
+    const client = new TestClient({
+      contracts_build_directory: fixturesDirectory,
+    });
+
+    const variables = {
+      contents: Migrations.source
+    };
+
+    // precondition: add source
+    const id = await client.addSource(variables);
+
+    // ensure retrieved as matching
+    {
+      const data = await client.execute(GetSource, { id });
+      expect(data).toHaveProperty("source");
+
+      const { source } = data;
+      expect(source).toHaveProperty("contents");
+
+      const { contents } = source;
+      expect(contents).toEqual(variables.contents);
     }
   });
 });

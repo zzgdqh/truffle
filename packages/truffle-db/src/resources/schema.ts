@@ -26,6 +26,7 @@ export const schema = makeExecutableSchema({
     type Query {
       ${nodeField}
       bytecode(id: ID!): Bytecode
+      source(id: ID!): Source
     }
 
     type LinkValue {
@@ -45,6 +46,12 @@ export const schema = makeExecutableSchema({
       linkReferences: [LinkReference]
     }
 
+    type Source implements Node {
+      id: ID!
+      contents: String!
+      sourcePath: String
+    }
+
     ${pageInfoType}
   `,
   resolvers: {
@@ -55,12 +62,20 @@ export const schema = makeExecutableSchema({
           const { nodeResolver } = nodeDefinitions( (globalId) => {
             const { type, id } = fromGlobalId(globalId);
             switch (type) {
+              case "Source":
+                return workspace.source({ id });
               case "Bytecode":
                 return workspace.bytecode({ id });
             }
           });
 
           return nodeResolver(...args);
+        }
+      },
+      source: {
+        resolve: (_, { id: globalId }, { workspace }) => {
+          const { id } = fromGlobalId(globalId);
+          return workspace.source({ id });
         }
       },
       bytecode: {
