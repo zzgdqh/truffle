@@ -85,6 +85,9 @@ export const schema = makeExecutableSchema({
         }
       }
     },
+    Source: {
+      id: globalIdResolver()
+    },
     Bytecode: {
       id: globalIdResolver()
     },
