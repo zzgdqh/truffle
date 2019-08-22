@@ -1,6 +1,5 @@
 declare module "web3-eth-abi" {
-
-export interface ABIDefinition {
+  export interface ABIDefinition {
     constant?: boolean;
     payable?: boolean;
     stateMutability?: "pure" | "view" | "nonpayable" | "payable";
@@ -9,11 +8,11 @@ export interface ABIDefinition {
     name?: string;
     outputs?: Array<{ name: string; type: ABIDataTypes }>;
     type: "function" | "constructor" | "event" | "fallback";
-}
+  }
 
-type ABIDataTypes = "uint256" | "boolean" | "string" | "bytes" | string; // TODO complete list
+  type ABIDataTypes = "uint256" | "boolean" | "string" | "bytes" | string; // TODO complete list
 
-export default class ABI {
+  export default class ABI {
     decodeLog(inputs: object, hexString: string, topics: string[]): object;
     encodeParameter(type: string, parameter: any): string;
     encodeParameters(types: string[], paramaters: any[]): string;
@@ -22,23 +21,23 @@ export default class ABI {
     encodeFunctionSignature(name: string | object): string;
     decodeParameter(type: string, hex: string): any;
     decodeParameters(
-        types: string[],
-        hex: string
+      types: string[],
+      hex: string
     ): EthAbiDecodeParametersResultArray;
     decodeParameters(
-        types: EthAbiDecodeParametersType[],
-        hex: string
+      types: EthAbiDecodeParametersType[],
+      hex: string
     ): EthAbiDecodeParametersResultObject;
-}
+  }
 
-interface EthAbiDecodeParametersType {
+  interface EthAbiDecodeParametersType {
     name: string;
     type: string;
-}
-interface EthAbiDecodeParametersResultArray {
+  }
+  interface EthAbiDecodeParametersResultArray {
     [index: number]: any;
-}
-type EthAbiDecodeParametersResultObject = EthAbiDecodeParametersResultArray & {
+  }
+  type EthAbiDecodeParametersResultObject = EthAbiDecodeParametersResultArray & {
     [key: string]: any;
-};
+  };
 }
