@@ -2,8 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decode-utils:contexts");
 
 import { Abi } from "truffle-contract-schema/spec";
-import { AbiCoder } from "web3-eth-abi";
-import { AbiItem } from "web3-utils";
+import { default as AbiCoder, ABIDefinition as AbiItem } from "web3-eth-abi";
 const abiCoder = new AbiCoder();
 import escapeRegExp from "lodash.escaperegexp";
 
