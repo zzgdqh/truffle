@@ -13,7 +13,8 @@
       "web3": [
         "../../node_modules/@types/web3/index",
         "node_modules/web3/index"
-      ]
+      ],
+      "web3-eth-abi": ["./typings/web3-eth-abi"]
     },
     "rootDir": "src",
     "typeRoots": [
