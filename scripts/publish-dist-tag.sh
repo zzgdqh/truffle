@@ -21,7 +21,8 @@ if [ "$?" != "0" ];
 fi
 
 node ./scripts/npm-access.js
-lerna version --no-git-tag-version --preid $distTag
+# lerna version --no-git-tag-version --preid $distTag
+lerna version --no-git-tag-version prerelease
 git add packages/*/package.json
 git commit -m "Publish truffle@${distTag}"
 lerna publish from-package --dist-tag ${distTag}
