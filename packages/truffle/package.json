@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.36-migrate-describe.0",
+  "version": "5.0.36-migrate-describe.1",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -32,9 +32,9 @@
   },
   "devDependencies": {
     "@truffle/box": "^1.0.37",
-    "@truffle/contract": "^4.0.33-migrate-describe.0",
-    "@truffle/core": "^5.0.36-migrate-describe.0",
-    "@truffle/debugger": "^5.0.28-migrate-describe.0",
+    "@truffle/contract": "^4.0.33-migrate-describe.1",
+    "@truffle/core": "^5.0.36-migrate-describe.1",
+    "@truffle/debugger": "^5.0.28-migrate-describe.1",
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "eslint": "^5.7.0",
