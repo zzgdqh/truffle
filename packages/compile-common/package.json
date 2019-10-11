@@ -1,0 +1,19 @@
+{
+  "name": "@truffle/compile-common",
+  "version": "0.1.0",
+  "description": "Library for common compiler helpers",
+  "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle.git"
+  },
+  "scripts": {
+    "test": ""
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  }
+}
