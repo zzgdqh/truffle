@@ -1,4 +1,4 @@
-const Expect = {
+let Expect = {
   options(options, expected_keys) {
     expected_keys.forEach(key => {
       if (options[key] == null) {
@@ -8,7 +8,7 @@ const Expect = {
   },
 
   one(options, expected_keys) {
-    const found = [];
+    let found = [];
 
     expected_keys.forEach(key => {
       if (options[key] != null) {
@@ -18,7 +18,7 @@ const Expect = {
       }
     });
 
-    const total = found.reduce((t, value) => t + value);
+    let total = found.reduce((t, value) => t + value);
 
     // If this doesn't work in all cases, perhaps we should
     // create an expect.onlyOne() function.
