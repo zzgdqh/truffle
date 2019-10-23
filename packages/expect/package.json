@@ -5,7 +5,9 @@
   "main": "index.bs.js",
   "scripts": {
     "build": "bsb -make-world",
-    "test": "mocha"
+    "prepare": "yarn build",
+    "test": "mocha",
+    "watch": "bsb -make-world -w"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/expect",
   "keywords": [
