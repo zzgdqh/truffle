@@ -221,7 +221,7 @@ const data = createSelectorTree({
           return Object.assign(
             {},
             ...Object.entries(referenceDeclarations).map(([id, node]) => ({
-              [id]: Codec.Format.Utils.MakeType.definitionToStoredType(
+              [id]: Codec.Ast.Convert.definitionToStoredType(
                 node,
                 sources[scopes[node.id].sourceId].compiler,
                 referenceDeclarations
