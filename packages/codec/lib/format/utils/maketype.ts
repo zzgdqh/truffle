@@ -5,8 +5,7 @@ import BN from "bn.js";
 import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
 import * as AbiData from "@truffle/codec/abi-data/types";
-import * as AstUtils from "@truffle/codec/ast/utils";
-import * as Ast from "@truffle/codec/ast/types";
+import * as Ast from "@truffle/codec/ast";
 import * as Format from "@truffle/codec/format/common";
 
 //NOTE: the following function will *not* work for arbitrary nodes! It will,
@@ -20,8 +19,8 @@ export function definitionToType(
   forceLocation?: Common.Location | null
 ): Format.Types.Type {
   debug("definition %O", definition);
-  let typeClass = AstUtils.typeClass(definition);
-  let typeHint = AstUtils.typeStringWithoutLocation(definition);
+  let typeClass = Ast.Utils.typeClass(definition);
+  let typeHint = Ast.Utils.typeStringWithoutLocation(definition);
   switch (typeClass) {
     case "bool":
       return {
@@ -40,13 +39,14 @@ export function definitionToType(
           return {
             typeClass,
             kind: "specific",
-            payable: AstUtils.typeIdentifier(definition) === "t_address_payable"
+            payable:
+              Ast.Utils.typeIdentifier(definition) === "t_address_payable"
           };
       }
       break; //to satisfy typescript
     }
     case "uint": {
-      let bytes = AstUtils.specifiedSize(definition);
+      let bytes = Ast.Utils.specifiedSize(definition);
       return {
         typeClass,
         bits: bytes * 8,
@@ -55,7 +55,7 @@ export function definitionToType(
     }
     case "int": {
       //typeScript won't let me group these for some reason
-      let bytes = AstUtils.specifiedSize(definition);
+      let bytes = Ast.Utils.specifiedSize(definition);
       return {
         typeClass,
         bits: bytes * 8,
@@ -64,8 +64,8 @@ export function definitionToType(
     }
     case "fixed": {
       //typeScript won't let me group these for some reason
-      let bytes = AstUtils.specifiedSize(definition);
-      let places = AstUtils.decimalPlaces(definition);
+      let bytes = Ast.Utils.specifiedSize(definition);
+      let places = Ast.Utils.decimalPlaces(definition);
       return {
         typeClass,
         bits: bytes * 8,
@@ -74,8 +74,8 @@ export function definitionToType(
       };
     }
     case "ufixed": {
-      let bytes = AstUtils.specifiedSize(definition);
-      let places = AstUtils.decimalPlaces(definition);
+      let bytes = Ast.Utils.specifiedSize(definition);
+      let places = Ast.Utils.decimalPlaces(definition);
       return {
         typeClass,
         bits: bytes * 8,
@@ -90,7 +90,7 @@ export function definitionToType(
           typeHint
         };
       }
-      let location = forceLocation || AstUtils.referenceType(definition);
+      let location = forceLocation || Ast.Utils.referenceType(definition);
       return {
         typeClass,
         location,
@@ -98,7 +98,7 @@ export function definitionToType(
       };
     }
     case "bytes": {
-      let length = AstUtils.specifiedSize(definition);
+      let length = Ast.Utils.specifiedSize(definition);
       if (length !== null) {
         return {
           typeClass,
@@ -114,7 +114,7 @@ export function definitionToType(
             typeHint
           };
         }
-        let location = forceLocation || AstUtils.referenceType(definition);
+        let location = forceLocation || Ast.Utils.referenceType(definition);
         return {
           typeClass,
           kind: "dynamic",
@@ -124,10 +124,10 @@ export function definitionToType(
       }
     }
     case "array": {
-      let baseDefinition = AstUtils.baseDefinition(definition);
+      let baseDefinition = Ast.Utils.baseDefinition(definition);
       let baseType = definitionToType(baseDefinition, compiler, forceLocation);
-      let location = forceLocation || AstUtils.referenceType(definition);
-      if (AstUtils.isDynamicArray(definition)) {
+      let location = forceLocation || Ast.Utils.referenceType(definition);
+      if (Ast.Utils.isDynamicArray(definition)) {
         if (forceLocation !== null) {
           return {
             typeClass,
@@ -145,7 +145,7 @@ export function definitionToType(
           };
         }
       } else {
-        let length = new BN(AstUtils.staticLengthAsString(definition));
+        let length = new BN(Ast.Utils.staticLengthAsString(definition));
         if (forceLocation !== null) {
           return {
             typeClass,
@@ -167,7 +167,7 @@ export function definitionToType(
       }
     }
     case "mapping": {
-      let keyDefinition = AstUtils.keyDefinition(definition);
+      let keyDefinition = Ast.Utils.keyDefinition(definition);
       //note that we can skip the scopes argument here! that's only needed when
       //a general node, rather than a declaration, is being passed in
       let keyType = <Format.Types.ElementaryType>(
@@ -199,9 +199,11 @@ export function definitionToType(
       };
     }
     case "function": {
-      let visibility = AstUtils.visibility(definition);
-      let mutability = AstUtils.mutability(definition);
-      let [inputParameters, outputParameters] = AstUtils.parameters(definition);
+      let visibility = Ast.Utils.visibility(definition);
+      let mutability = Ast.Utils.mutability(definition);
+      let [inputParameters, outputParameters] = Ast.Utils.parameters(
+        definition
+      );
       //note: don't force a location on these! use the listed location!
       let inputParameterTypes = inputParameters.map(parameter =>
         definitionToType(parameter, compiler)
@@ -231,8 +233,8 @@ export function definitionToType(
       break; //to satisfy typescript
     }
     case "struct": {
-      let id = AstUtils.typeId(definition).toString();
-      let qualifiedName = AstUtils.typeStringWithoutLocation(definition).match(
+      let id = Ast.Utils.typeId(definition).toString();
+      let qualifiedName = Ast.Utils.typeStringWithoutLocation(definition).match(
         /struct (.*)/
       )[1];
       let [definingContractName, typeName] = qualifiedName.split(".");
@@ -245,7 +247,7 @@ export function definitionToType(
           definingContractName
         };
       }
-      let location = forceLocation || AstUtils.referenceType(definition);
+      let location = forceLocation || Ast.Utils.referenceType(definition);
       return {
         typeClass,
         kind: "local",
@@ -256,8 +258,8 @@ export function definitionToType(
       };
     }
     case "enum": {
-      let id = AstUtils.typeId(definition).toString();
-      let qualifiedName = AstUtils.typeStringWithoutLocation(definition).match(
+      let id = Ast.Utils.typeId(definition).toString();
+      let qualifiedName = Ast.Utils.typeStringWithoutLocation(definition).match(
         /enum (.*)/
       )[1];
       let [definingContractName, typeName] = qualifiedName.split(".");
@@ -270,11 +272,11 @@ export function definitionToType(
       };
     }
     case "contract": {
-      let id = AstUtils.typeId(definition).toString();
+      let id = Ast.Utils.typeId(definition).toString();
       let typeName = definition.typeName
         ? definition.typeName.name
         : definition.name;
-      let contractKind = AstUtils.contractKind(definition);
+      let contractKind = Ast.Utils.contractKind(definition);
       return {
         typeClass,
         kind: "native",
@@ -284,7 +286,7 @@ export function definitionToType(
       };
     }
     case "magic": {
-      let typeIdentifier = AstUtils.typeIdentifier(definition);
+      let typeIdentifier = Ast.Utils.typeIdentifier(definition);
       let variable = <Format.Types.MagicVariableName>(
         typeIdentifier.match(/^t_magic_(.*)$/)[1]
       );
@@ -372,7 +374,7 @@ export function definitionToStoredType(
       let id = definition.id.toString();
       let typeName = definition.name;
       let contractKind = definition.contractKind;
-      let payable = AstUtils.isContractPayable(definition);
+      let payable = Ast.Utils.isContractPayable(definition);
       return {
         typeClass: "contract",
         kind: "native",
