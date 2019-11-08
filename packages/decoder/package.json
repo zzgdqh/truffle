@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.0.16",
+  "version": "3.0.17-micah.0",
   "main": "dist/interface/index.js",
   "directories": {
     "lib": "lib"
@@ -21,8 +21,8 @@
   },
   "types": "lib/interface/index.ts",
   "dependencies": {
-    "@truffle/decode-utils": "^1.0.19",
-    "@truffle/provider": "^0.2.1",
+    "@truffle/decode-utils": "^1.0.20-micah.0",
+    "@truffle/provider": "^0.2.2-micah.0",
     "abi-decoder": "^1.2.0",
     "async-eventemitter": "^0.2.4",
     "bn.js": "^4.11.8",
@@ -40,7 +40,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.0.18",
+    "@truffle/contract-schema": "^3.0.19-micah.0",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
     "@types/lodash": "^4.14.116",

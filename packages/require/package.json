@@ -8,15 +8,15 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.27",
+  "version": "2.0.28-micah.0",
   "main": "require.js",
   "scripts": {
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/config": "^1.2.5",
+    "@truffle/config": "^1.2.6-micah.0",
     "@truffle/expect": "^0.0.12",
-    "@truffle/interface-adapter": "^0.3.2",
+    "@truffle/interface-adapter": "^0.3.3-micah.0",
     "original-require": "1.0.1",
     "web3": "1.2.2"
   },
