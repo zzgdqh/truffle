@@ -8,7 +8,7 @@
     "@truffle/compile-vyper": "^1.0.40",
     "@truffle/config": "^1.2.10",
     "@truffle/expect": "^0.0.13",
-    "@truffle/external-compile": "^1.0.25",
+    "@truffle/external-compile": "^1.0.26-truffleLogger.0",
     "@truffle/resolver": "^5.0.25",
     "fs-extra": "^7.0.1",
     "mkdirp": "^0.5.1"

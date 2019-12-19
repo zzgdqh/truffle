@@ -16,7 +16,7 @@
   "dependencies": {
     "@truffle/config": "^1.2.10",
     "@truffle/expect": "^0.0.13",
-    "@truffle/interface-adapter": "^0.4.2",
+    "@truffle/interface-adapter": "^0.4.3-truffleLogger.0",
     "original-require": "1.0.1",
     "web3": "1.2.1"
   },

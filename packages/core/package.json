@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.1.8",
+  "version": "5.2.1-truffleLogger.0",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
@@ -29,9 +29,9 @@
     "@truffle/environment": "^0.1.24",
     "@truffle/error": "^0.0.8",
     "@truffle/expect": "^0.0.13",
-    "@truffle/interface-adapter": "^0.4.2",
+    "@truffle/interface-adapter": "^0.4.3-truffleLogger.0",
     "@truffle/migrate": "^3.1.4",
-    "@truffle/provider": "^0.2.5",
+    "@truffle/provider": "^0.2.6-truffleLogger.0",
     "@truffle/provisioner": "^0.2.0",
     "@truffle/require": "^2.0.32",
     "@truffle/resolver": "^5.0.25",
