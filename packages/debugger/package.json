@@ -39,12 +39,12 @@
     "web3-eth-abi": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.43",
+    "@truffle/artifactor": "^4.0.44-truffleLogger.0",
     "@truffle/box": "^1.0.51",
     "@truffle/debug-utils": "^2.1.4",
-    "@truffle/migrate": "^3.1.4",
-    "@truffle/resolver": "^5.0.25",
-    "@truffle/workflow-compile": "^2.1.17",
+    "@truffle/migrate": "^3.2.0-truffleLogger.0",
+    "@truffle/resolver": "^5.1.0-truffleLogger.0",
+    "@truffle/workflow-compile": "^2.1.18-truffleLogger.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
